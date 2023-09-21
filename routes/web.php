@@ -30,9 +30,17 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 Route::middleware('auth')->group(function () {
+    // 管理者
     Route::middleware('adminCheck')->prefix('administer')->name('administer')->group(function () {
         Route::get('/', function () {
             return Inertia::render('Administer/Top');
+        })->name('top');
+    });
+
+    // ユーザー
+    Route::middleware('userCheck')->prefix('user')->name('user')->group(function () {
+        Route::get('/', function () {
+            return Inertia::render('User/Top');
         })->name('top');
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
