@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReserveController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -28,6 +29,11 @@ Route::get('/', function () {
 Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
+
+// 予約ページ
+Route::prefix('reserve')->name('reserve')->group(function () {
+    Route::get('/', [ReserveController::class, 'index'])->name('index');
+});
 
 Route::middleware('auth')->group(function () {
     // 管理者
