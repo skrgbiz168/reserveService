@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 // use App\Models\Item;
 // use App\Http\Requests\StoreItemRequest;
 // use App\Http\Requests\UpdateItemRequest;
+use App\Http\Libraries\ReserveFunctions;
+use Carbon\Carbon;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 
@@ -20,7 +22,11 @@ class ReserveController extends Controller
         // return Inertia::render('Reserve/index', [
         //     'items' => Item::select('id', 'name', 'price', 'is_selling')->get(),
         // ]);
-        return Inertia::render('Reserve/index');
+        $dt = Carbon::today();
+        return Inertia::render('Reserve/index', [
+            'startWeek' => $dt->startOfWeek(),
+            'weeks' => ReserveFunctions::getWeekDates()
+            ]);
     }
 
     /**

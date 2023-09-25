@@ -2,8 +2,9 @@
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
-defineProps({
-
+const props = defineProps({
+    startWeek:String,
+    weeks: Array,
 });
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 const hours = Array.from({ length: 24 }, (_, i) => `${i}:00 - ${i + 1}:00`);
@@ -20,12 +21,11 @@ const reserve = (day, hour) => {
         <div
             class="relative sm:flex sm:justify-center sm:items-center min-h-screen bg-dots-darker bg-center dark:bg-dots-lighter dark:bg-gray-900 selection:bg-red-500 selection:text-white"
         >
-
         <table class="min-w-full">
           <thead>
             <tr>
               <th class="border px-4 py-2"></th>
-              <th v-for="day in days" :key="day" class="border px-4 py-2">{{ day }}</th>
+              <th v-for="day in weeks" :key="day" class="border px-4 py-2">{{ day }}</th>
             </tr>
           </thead>
           <tbody>
