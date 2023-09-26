@@ -1,13 +1,12 @@
 <script setup>
-import GuestLayout from '@/Layouts/GuestLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
 const props = defineProps({
     startWeek:String,
     weeks: Array,
+    reserves: Array,
 });
-const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-const hours = Array.from({ length: 24 }, (_, i) => `${i}:00 - ${i + 1}:00`);
+const hours = Array.from({ length: 24 }, (_, i) => `${i}時`);
 
 const reserve = (day, hour) => {
       alert(`Reserved for ${day} at ${hour}`);
@@ -16,24 +15,23 @@ const reserve = (day, hour) => {
 </script>
 
 <template>
-    <GuestLayout>
-        <Head title="Welcome" />
+        <Head title="予約ページ" />
         <div
             class="relative sm:flex sm:justify-center sm:items-center min-h-screen bg-dots-darker bg-center dark:bg-dots-lighter dark:bg-gray-900 selection:bg-red-500 selection:text-white"
         >
-        <table class="min-w-full">
+        <table class="min-w-full w-auto">
           <thead>
             <tr>
-              <th class="border px-4 py-2"></th>
-              <th v-for="day in weeks" :key="day" class="border px-4 py-2">{{ day }}</th>
+              <th class="w-1/12 border px-4 py-2"></th>
+              <th v-for="day in weeks" :key="day" class="w-1/12 border px-4 py-2">{{ day }}</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="hour in hours" :key="hour">
-              <td class="border px-4 py-2">{{ hour }}</td>
-              <td v-for="day in days" :key="day" class="border px-4 py-2">
-                <button @click="reserve(day, hour)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-1 px-2 rounded">
-                  Reserve
+            <tr v-for="(hour, index) in hours" :key="hour">
+              <td class="w-1/12 border px-4 py-2">{{ hour }}</td>
+              <td v-for="day in weeks" :key="day" class="w-1/12 border px-4 py-2">
+                <button v-if="reserves[day + ' ' + index]" @click="reserve(day, hour)" class="w-full bg-blue-500 hover:bg-blue-700 text-white font-bold m-1 rounded">
+                  ○
                 </button>
               </td>
             </tr>
@@ -41,7 +39,6 @@ const reserve = (day, hour) => {
         </table>
 
         </div>
-    </GuestLayout>
 </template>
 
 <style>

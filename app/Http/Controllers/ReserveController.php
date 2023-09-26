@@ -25,7 +25,8 @@ class ReserveController extends Controller
         $dt = Carbon::today();
         return Inertia::render('Reserve/index', [
             'startWeek' => $dt->startOfWeek(),
-            'weeks' => ReserveFunctions::getWeekDates()
+            'weeks' => ReserveFunctions::getWeekDates(),
+            'reserves' => ReserveFunctions::getAvailableDates(),
             ]);
     }
 
