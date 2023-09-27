@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('reserves', function (Blueprint $table) {
             $table->id();
             $table->foreignId('users_id')->constrained()->onUpdate('cascade');
+            $table->unsignedInteger('status');
             $table->timestamp('start_at')->useCurrent();
             $table->timestamp('finish_at')->useCurrent();
             $table->timestamps();

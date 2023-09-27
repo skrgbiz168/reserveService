@@ -3,6 +3,8 @@ namespace App\Http\Libraries;
 
 use App\Models\Reserves;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ReserveFunctions
 {
@@ -44,7 +46,8 @@ class ReserveFunctions
         for ($date = $start; $date->lte($endOfWeek); $date->addHour()) {
             $existingReservation = $reservations->filter(function ($reservation) use ($date) {
                 // ->subHours($time)をstart_atにつけて、2時間予約時の時間分を確保する
-                return $date->between($reservation->start_at, $reservation->finish_at);
+                $finish_at = Carbon::createFromFormat('Y-m-j H:i:s', $reservation->finish_at);
+                return $date->between($reservation->start_at, $finish_at->subMinute());
             })->count();
 
             if (!$existingReservation && $now < $date) {
@@ -54,5 +57,38 @@ class ReserveFunctions
             }
         }
         return $availableDates;
+    }
+
+    public static function createReserve($request)
+    {
+        $day = $request->day;
+        $hour = str_replace('時', '', $request->hour);
+
+        // 年を追加 (この例では現在の年を使用)
+        $year = Carbon::now()->year; // 現在の年を取得
+
+        $dateTimeString = "$year/$day $hour:00";
+
+        // 日付と時間の文字列をパースして Carbon オブジェクトを作成
+        $startTime = Carbon::createFromFormat('Y/n/j H:i', $dateTimeString);
+        $finishTime = $startTime->copy()->addHours(1);
+
+        DB::beginTransaction();
+
+        try {
+            Reserves::create([
+                'users_id' => 2,
+                'status' => 1,
+                'start_at' => $startTime,
+                'finish_at' => $finishTime,
+            ]);
+            DB::commit();
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            DB::rollBack();
+            return false;
+        }
+        return true;
     }
 }

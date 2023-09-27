@@ -1,25 +1,36 @@
 <script setup>
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     startWeek:String,
     weeks: Array,
     reserves: Array,
 });
+
+const form = useForm({
+    day: '',
+    hour: '',
+});
+
 const hours = Array.from({ length: 24 }, (_, i) => `${i}時`);
 
 const reserve = (day, hour) => {
-      alert(`Reserved for ${day} at ${hour}`);
-    };
+    form.day = day
+    form.hour = hour
+
+    form.post(route('reserve.store'), {
+        onFinish: () => alert(`登録完了`),
+    })
+};
 
 </script>
 
 <template>
         <Head title="予約ページ" />
         <div
-            class="relative sm:flex sm:justify-center sm:items-center min-h-screen bg-dots-darker bg-center dark:bg-dots-lighter dark:bg-gray-900 selection:bg-red-500 selection:text-white"
+            class="relative w-full md:w-3/4 md:mx-auto min-h-screen bg-dots-darker bg-center dark:bg-dots-lighter dark:bg-gray-900 selection:bg-red-500 selection:text-white"
         >
-        <table class="min-w-full w-auto">
+        <table class="min-w-full w-auto mt-4">
           <thead>
             <tr>
               <th class="w-1/12 border px-4 py-2"></th>

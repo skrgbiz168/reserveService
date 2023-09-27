@@ -31,20 +31,21 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 // 予約ページ
-Route::prefix('reserve')->name('reserve')->group(function () {
+Route::prefix('reserve')->name('reserve.')->group(function () {
     Route::get('/', [ReserveController::class, 'index'])->name('index');
+    Route::post('/store', [ReserveController::class, 'store'])->name('store');
 });
 
 Route::middleware('auth')->group(function () {
     // 管理者
-    Route::middleware('adminCheck')->prefix('administer')->name('administer')->group(function () {
+    Route::middleware('adminCheck')->prefix('administer')->name('administer.')->group(function () {
         Route::get('/', function () {
             return Inertia::render('Administer/Top');
         })->name('top');
     });
 
     // ユーザー
-    Route::middleware('userCheck')->prefix('user')->name('user')->group(function () {
+    Route::middleware('userCheck')->prefix('user')->name('user.')->group(function () {
         Route::get('/', function () {
             return Inertia::render('User/Top');
         })->name('top');

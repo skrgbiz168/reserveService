@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 // use App\Models\Item;
-// use App\Http\Requests\StoreItemRequest;
+use App\Http\Requests\StoreReserveRequest;
 // use App\Http\Requests\UpdateItemRequest;
 use App\Http\Libraries\ReserveFunctions;
 use Carbon\Carbon;
@@ -46,20 +46,15 @@ class ReserveController extends Controller
      * @param  \App\Http\Requests\StoreItemRequest  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(StoreItemRequest $request)
+    public function store(StoreReserveRequest $request)
     {
-        dd($request->file);
-        Item::create([
-            'name' => $request->name,
-            'memo' => $request->memo,
-            'price' => $request->price,
-        ]);
+        $result = ReserveFunctions::createReserve($request);
 
-        return to_route('items.index')
-        ->with([
-                'message' => '登録しました',
-                'status' => 'success'
-            ]);
+        if ($result) {
+            return true;
+        } else {
+            return 1212;
+        }
     }
 
     /**
