@@ -6,9 +6,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreReserveRequest;
 // use App\Http\Requests\UpdateItemRequest;
 use App\Http\Libraries\ReserveFunctions;
-use Carbon\Carbon;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ReserveController extends Controller
 {
@@ -17,17 +17,31 @@ class ReserveController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         // return Inertia::render('Reserve/index', [
         //     'items' => Item::select('id', 'name', 'price', 'is_selling')->get(),
         // ]);
-        $dt = Carbon::today();
+        $seach = array(
+            'week' => $request->week,
+            'stayTime'  => $request->stayTime ===null ? 0 : $request->stayTime,
+        );
         return Inertia::render('Reserve/index', [
-            'startWeek' => $dt->startOfWeek(),
-            'weeks' => ReserveFunctions::getWeekDates(),
-            'reserves' => ReserveFunctions::getAvailableDates(),
+            'weeks' => ReserveFunctions::getWeekDates($seach['week'], $seach['stayTime']),
+            'reserves' => ReserveFunctions::getAvailableDates($seach['week'], $seach['stayTime']),
+            'seach' => $seach,
             ]);
+    }
+
+    public function checkAuth(StoreReserveRequest $request)
+    {
+        $start_at = ReserveFunctions::makeReserveStart($request);
+
+        if (Auth::check()) {
+            return redirect()->route('reserves.create', ['start_at' => $start_at]);
+        } else {
+            return redirect()->route('login', ['start_at' => $start_at]);
+        }
     }
 
     /**

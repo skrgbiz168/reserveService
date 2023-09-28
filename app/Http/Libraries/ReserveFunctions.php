@@ -14,10 +14,15 @@ class ReserveFunctions
     * @param string $data
     * @return array
     */
-    public static function getWeekDates()
+    public static function getWeekDates($week = null)
     {
         $dates = [];
-        $start = Carbon::now()->startOfWeek(); // 週の開始日（月曜日）を取得
+        // 週の開始日（月曜日）を取得
+        if ($week !== null) {
+            $start = Carbon::now()->addWeeks($week)->startOfWeek();
+        } else {
+            $start = Carbon::now()->startOfWeek();
+        }
 
         // 1週間の日付をループで取得
         for ($i = 0; $i < 7; $i++) {
@@ -28,12 +33,16 @@ class ReserveFunctions
         return $dates;
     }
 
-    public static function getAvailableDates()
+    public static function getAvailableDates($week = null, $stayTime = null)
     {
         $now = Carbon::now();
+        if ($week !== null) {
+            $target = $now->copy()->addWeeks($week);
+        }
+
         // 24時間以上取れないと想定して、各日１日前後を取得する
-        $start = $now->copy()->startOfWeek()->subDay();
-        $endOfWeek = $now->copy()->endOfWeek()->addDay();
+        $start = $target->copy()->startOfWeek()->subDay();
+        $endOfWeek = $target->copy()->endOfWeek()->addDay();
         $availableDates = [];
 
         $reservations = Reserves::whereBetween('start_at', [$start, $endOfWeek])
@@ -44,10 +53,14 @@ class ReserveFunctions
         // for ($date = $start; $date->lte($endOfWeek); $date->addMinutes(30))
         // 1時間ごと
         for ($date = $start; $date->lte($endOfWeek); $date->addHour()) {
-            $existingReservation = $reservations->filter(function ($reservation) use ($date) {
+            $existingReservation = $reservations->filter(function ($reservation) use ($date, $stayTime) {
                 // ->subHours($time)をstart_atにつけて、2時間予約時の時間分を確保する
+                $start_at  = Carbon::createFromFormat('Y-m-j H:i:s', $reservation->start_at);
+                if ($stayTime !== null) {
+                    $start_at  =  $start_at->subHours($stayTime);
+                }
                 $finish_at = Carbon::createFromFormat('Y-m-j H:i:s', $reservation->finish_at);
-                return $date->between($reservation->start_at, $finish_at->subMinute());
+                return $date->between($start_at, $finish_at->subMinute());
             })->count();
 
             if (!$existingReservation && $now < $date) {
@@ -59,19 +72,25 @@ class ReserveFunctions
         return $availableDates;
     }
 
-    public static function createReserve($request)
+    public static function makeReserveStart($request)
     {
         $day = $request->day;
-        $hour = str_replace('時', '', $request->hour);
+        $hour = $request->hour;
 
         // 年を追加 (この例では現在の年を使用)
         $year = Carbon::now()->year; // 現在の年を取得
 
         $dateTimeString = "$year/$day $hour:00";
+        return $dateTimeString;
 
         // 日付と時間の文字列をパースして Carbon オブジェクトを作成
-        $startTime = Carbon::createFromFormat('Y/n/j H:i', $dateTimeString);
-        $finishTime = $startTime->copy()->addHours(1);
+        // return Carbon::createFromFormat('Y/n/j H:i', $dateTimeString);
+    }
+
+    public static function createReserve($request)
+    {
+        $startTime = self::makeReserveStart($request);
+        // $finishTime = $startTime->copy()->addHours(1);
 
         DB::beginTransaction();
 
@@ -80,7 +99,7 @@ class ReserveFunctions
                 'users_id' => 2,
                 'status' => 1,
                 'start_at' => $startTime,
-                'finish_at' => $finishTime,
+                // 'finish_at' => $finishTime,
             ]);
             DB::commit();
 

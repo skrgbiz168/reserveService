@@ -34,6 +34,7 @@ Route::get('/dashboard', function () {
 Route::prefix('reserve')->name('reserve.')->group(function () {
     Route::get('/', [ReserveController::class, 'index'])->name('index');
     Route::post('/store', [ReserveController::class, 'store'])->name('store');
+    Route::post('/checkAuth', [ReserveController::class, 'checkAuth'])->name('checkAuth');
 });
 
 Route::middleware('auth')->group(function () {
