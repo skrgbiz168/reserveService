@@ -3,23 +3,26 @@ import Checkbox from '@/Components/Checkbox.vue';
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
 
-defineProps({
+const props = defineProps({
     canResetPassword: {
         type: Boolean,
     },
     status: {
         type: String,
     },
+    start_at: String,
+    stay_time: String,
 });
 
 const form = useForm({
     email: '',
     password: '',
     remember: false,
+    start_at: props.start_at,
+    stay_time: props.stay_time,
 });
 
 const submit = () => {
@@ -76,7 +79,14 @@ const submit = () => {
                 </label>
             </div>
 
-            <div class="flex items-center justify-end mt-4">
+            <div class="flex justify-center mt-4">
+                <button class="mx-4 py-2 w-full bg-red-400 rounded-lg"
+                    :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                    ログイン
+                </button>
+            </div>
+
+            <div class="flex items-center justify-center mt-8">
                 <Link
                     v-if="canResetPassword"
                     :href="route('password.request')"
@@ -84,10 +94,15 @@ const submit = () => {
                 >
                     パスワードを忘れた場合
                 </Link>
+            </div>
 
-                <PrimaryButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    ログイン
-                </PrimaryButton>
+            <div class="flex items-center justify-center mt-4">
+                <Link
+                    :href="route('register', {'start_at': start_at,'stay_time': stay_time})"
+                    class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                >
+                    未登録の場合はこちら
+                </Link>
             </div>
         </form>
     </GuestLayout>

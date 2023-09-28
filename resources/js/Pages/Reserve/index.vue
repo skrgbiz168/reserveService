@@ -11,6 +11,7 @@ const props = defineProps({
 const form = useForm({
     day: '',
     hour: '',
+    stayTime: '',
 });
 
 const seach = useForm({
@@ -28,6 +29,7 @@ const hours = Array.from({ length: 24 }, (_, i) => `${i}時`);
 const reserve = (day, index) => {
     form.day = day
     form.hour = index
+    form.stayTime = seach.stayTime
 
     form.post(route('reserve.checkAuth'))
 };
@@ -50,8 +52,6 @@ const sendAddWeek = () => {
   }
   seach.get(route('reserve.index'))
 }
-onMounted(() => console.log(stayTimeValue));
-
 </script>
 
 <template>

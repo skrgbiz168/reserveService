@@ -19,9 +19,6 @@ class ReserveController extends Controller
      */
     public function index(Request $request)
     {
-        // return Inertia::render('Reserve/index', [
-        //     'items' => Item::select('id', 'name', 'price', 'is_selling')->get(),
-        // ]);
         $seach = array(
             'week' => $request->week,
             'stayTime'  => $request->stayTime ===null ? 0 : $request->stayTime,
@@ -36,11 +33,18 @@ class ReserveController extends Controller
     public function checkAuth(StoreReserveRequest $request)
     {
         $start_at = ReserveFunctions::makeReserveStart($request);
+        $stay_time = $request->stayTime == null ? 0 : $request->stayTime;
 
         if (Auth::check()) {
-            return redirect()->route('reserves.create', ['start_at' => $start_at]);
+            return redirect()->route('user.reserve.create', [
+                    'start_at' => $start_at,
+                    'stay_time' => $stay_time,
+                ]);
         } else {
-            return redirect()->route('login', ['start_at' => $start_at]);
+            return redirect()->route('login', [
+                    'start_at' => $start_at,
+                    'stay_time' => $stay_time,
+                ]);
         }
     }
 
@@ -49,9 +53,12 @@ class ReserveController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
-        return Inertia::render('Items/Create');
+        return Inertia::render('User/Reserve/Create', [
+            'start_at' => $request->start_at,
+            'stay_time' => intval($request->stay_time),
+        ]);
     }
 
     /**

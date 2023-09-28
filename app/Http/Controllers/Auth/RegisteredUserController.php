@@ -19,9 +19,12 @@ class RegisteredUserController extends Controller
     /**
      * Display the registration view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
-        return Inertia::render('Auth/Register');
+        return Inertia::render('Auth/Register',[
+            'start_at' => $request->start_at,
+            'stay_time' => $request->stay_time,
+        ]);
     }
 
     /**
@@ -35,10 +38,13 @@ class RegisteredUserController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:'.User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'start_at' => 'nullable|string',
+            'stay_time' => 'nullable|string',
         ]);
 
         $user = User::create([
             'name' => $request->name,
+            'administer_flag' => false,
             'email' => $request->email,
             'password' => Hash::make($request->password),
         ]);
@@ -47,6 +53,14 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(RouteServiceProvider::HOME);
+        if ($request->start_at !== null && $request->stay_time !== null) {
+            return redirect()->route('user.reserve.create', [
+                'start_at' => $request->start_at,
+                'stay_time' => $request->stay_time,
+            ]);
+        } else {
+            return redirect(RouteServiceProvider::USER_HOME);
+        }
+
     }
 }

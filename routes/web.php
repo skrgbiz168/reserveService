@@ -33,7 +33,6 @@ Route::get('/dashboard', function () {
 // 予約ページ
 Route::prefix('reserve')->name('reserve.')->group(function () {
     Route::get('/', [ReserveController::class, 'index'])->name('index');
-    Route::post('/store', [ReserveController::class, 'store'])->name('store');
     Route::post('/checkAuth', [ReserveController::class, 'checkAuth'])->name('checkAuth');
 });
 
@@ -50,6 +49,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/', function () {
             return Inertia::render('User/Top');
         })->name('top');
+
+        // 予約ページ
+        Route::prefix('reserve')->name('reserve.')->group(function () {
+            Route::get('/create', [ReserveController::class, 'create'])->name('create');
+            Route::post('/store', [ReserveController::class, 'store'])->name('store');
+        });
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
