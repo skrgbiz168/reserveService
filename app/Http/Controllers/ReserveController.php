@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-// use App\Models\Item;
+use App\Models\Reserves;
 use App\Http\Requests\StoreReserveRequest;
 // use App\Http\Requests\UpdateItemRequest;
 use App\Http\Libraries\ReserveFunctions;
@@ -95,10 +95,11 @@ class ReserveController extends Controller
      * @param  \App\Models\Item  $item
      * @return \Illuminate\Http\Response
      */
-    public function show(Item $item)
+    public function userList()
     {
-        return Inertia::render('Items/Show',[
-            'item' => $item
+        $reserves = Reserves::where('users_id', Auth::id())->orderBy('start_at')->get();
+        return Inertia::render('User/Reserve/List',[
+            'reserves' => $reserves
         ]);
     }
 
