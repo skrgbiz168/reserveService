@@ -36,6 +36,7 @@ class ReserveFunctions
     public static function getAvailableDates($week = null, $stayTime = null)
     {
         $now = Carbon::now();
+        $target = $now;
         if ($week !== null) {
             $target = $now->copy()->addWeeks($week);
         }
@@ -85,6 +86,40 @@ class ReserveFunctions
 
         // 日付と時間の文字列をパースして Carbon オブジェクトを作成
         // return Carbon::createFromFormat('Y/n/j H:i', $dateTimeString);
+    }
+
+    public static function checkReserve($start_at = null, $stay_time = null)
+    {
+        if ($start_at === null || $stay_time === null
+            || !preg_match( '/^[0-9]+$/', $stay_time)) {
+            return false;
+        }
+
+        $now = Carbon::now();
+        $start_at = Carbon::createFromFormat('Y/n/j H:i', $start_at);
+        $stay_time = intval($stay_time);
+        $stay_time += 1;
+        $finish_at = $start_at->copy()->addHours($stay_time)->subMinute();
+
+        if ($now > $start_at || $start_at->minute !== 0
+            || $stay_time >= 6) {
+            return false;
+        }
+
+        // 予約時間の重複を確認
+        $overlappingReservations = Reserves::where(function ($query) use ($start_at, $finish_at) {
+            $query->whereBetween('start_at', [$start_at, $finish_at])
+                ->orWhereBetween('finish_at', [$start_at, $finish_at])
+                // start_at が start前で finish_at が finish後
+                ->orWhere(function ($query) use ($start_at, $finish_at) {
+                    $query->where('start_at', '<', $start_at)->where('finish_at', '>', $finish_at);
+                });
+        })->get();
+        if ($overlappingReservations->count() > 0) {
+            return false;
+        }
+
+        return true;
     }
 
     public static function createReserve($request)

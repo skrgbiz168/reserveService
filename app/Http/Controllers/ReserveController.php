@@ -55,10 +55,16 @@ class ReserveController extends Controller
      */
     public function create(Request $request)
     {
-        return Inertia::render('User/Reserve/Create', [
-            'start_at' => $request->start_at,
-            'stay_time' => intval($request->stay_time),
-        ]);
+        $checkResult = ReserveFunctions::checkReserve($request->start_at, $request->stay_time);
+
+        if ($checkResult) {
+            return Inertia::render('User/Reserve/Create', [
+                'start_at' => $request->start_at,
+                'stay_time' => intval($request->stay_time),
+            ]);
+        } else {
+            return Inertia::render('User/Reserve/CheckError');
+        }
     }
 
     /**
