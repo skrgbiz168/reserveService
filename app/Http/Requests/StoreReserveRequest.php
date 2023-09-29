@@ -16,8 +16,8 @@ class StoreReserveRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'day' => ['required'],
-            'hour' => ['required'],
+            'start_at' => ['required'],
+            'stay_time' => ['required'],
         ];
     }
 }

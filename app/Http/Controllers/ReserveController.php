@@ -30,8 +30,13 @@ class ReserveController extends Controller
             ]);
     }
 
-    public function checkAuth(StoreReserveRequest $request)
+    public function checkAuth(Request $request)
     {
+        $request->validate([
+            'day' => ['required'],
+            'hour' => ['required'],
+            'stayTime' => ['required'],
+        ]);
         $start_at = ReserveFunctions::makeReserveStart($request);
         $stay_time = $request->stayTime == null ? 0 : $request->stayTime;
 

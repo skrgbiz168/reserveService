@@ -1,11 +1,20 @@
 <script setup>
 import UserAuthenticatedLayout from '@/Layouts/UserAuthenticatedLayout.vue';
-import { Head } from '@inertiajs/vue3';
+import { Head, useForm } from '@inertiajs/vue3';
 
 const props = defineProps({
     start_at: String,
-    stay_time: String,
+    stay_time: Number,
 });
+
+const form = useForm({
+    start_at: props.start_at,
+    stay_time: props.stay_time,
+});
+
+const send = () => {
+    form.post(route('user.reserve.store'))
+}
 </script>
 
 <template>
@@ -36,6 +45,14 @@ const props = defineProps({
                         </tr>
                       </tbody>
                     </table>
+
+                    <div class="flex justify-center my-4">
+                        <button class="mx-4 py-2 w-1/2 bg-red-400 rounded-lg"
+                            @click="send"    :disabled="form.processing">
+                        登録する
+                        </button>
+                    </div>
+
                 </div>
             </div>
         </div>

@@ -3,6 +3,7 @@ namespace App\Http\Libraries;
 
 use App\Models\Reserves;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -124,17 +125,25 @@ class ReserveFunctions
 
     public static function createReserve($request)
     {
-        $startTime = self::makeReserveStart($request);
+        $result = self::checkReserve($request->start_at, $request->stay_time);
+        if ($result === false) {
+            return false;
+        }
+
+        // $startTime = self::makeReserveStart($request);
         // $finishTime = $startTime->copy()->addHours(1);
+        $start_at = Carbon::createFromFormat('Y/n/j H:i', $request->start_at);
+        $stay_time = intval($request->stay_time);
+        $finish_at = $start_at->copy()->addHours($stay_time+1);
 
         DB::beginTransaction();
 
         try {
             Reserves::create([
-                'users_id' => 2,
+                'users_id' => Auth::id(),
                 'status' => 1,
-                'start_at' => $startTime,
-                // 'finish_at' => $finishTime,
+                'start_at' => $start_at,
+                'finish_at' => $finish_at,
             ]);
             DB::commit();
 
