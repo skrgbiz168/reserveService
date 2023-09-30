@@ -2,15 +2,21 @@
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import InputError from '@/Components/InputError.vue';
 import InputLabel from '@/Components/InputLabel.vue';
-import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+
+const props = defineProps({
+    start_at: String,
+    stay_time: String,
+});
 
 const form = useForm({
     name: '',
     email: '',
     password: '',
     password_confirmation: '',
+    start_at: props.start_at,
+    stay_time: props.stay_time,
 });
 
 const submit = () => {
@@ -22,11 +28,11 @@ const submit = () => {
 
 <template>
     <GuestLayout>
-        <Head title="Register" />
+        <Head title="ユーザー登録" />
 
         <form @submit.prevent="submit">
             <div>
-                <InputLabel for="name" value="ペンネーム" />
+                <InputLabel for="name" value="氏名" />
 
                 <TextInput
                     id="name"
@@ -86,17 +92,20 @@ const submit = () => {
                 <InputError class="mt-2" :message="form.errors.password_confirmation" />
             </div>
 
-            <div class="flex items-center justify-end mt-4">
+            <div class="flex justify-center mt-4">
+                <button class="mx-4 py-2 w-full bg-red-400 rounded-lg"
+                    :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                    登録する
+                </button>
+            </div>
+
+            <div class="flex items-center justify-center mt-4">
                 <Link
-                    :href="route('login')"
+                    :href="route('login', {'start_at': start_at,'stay_time': stay_time})"
                     class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                 >
-                    Already registered?
+                    ログインはこちら
                 </Link>
-
-                <PrimaryButton class="ml-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
-                    Register
-                </PrimaryButton>
             </div>
         </form>
     </GuestLayout>

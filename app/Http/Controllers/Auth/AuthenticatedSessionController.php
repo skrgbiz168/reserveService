@@ -17,11 +17,13 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): Response
+    public function create(Request $request): Response
     {
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
+            'start_at' => $request->start_at,
+            'stay_time' => $request->stay_time,
         ]);
     }
 
@@ -34,7 +36,16 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        if ($request->start_at !== null && $request->stay_time !== null) {
+            return redirect()->route('user.reserve.create', [
+                'start_at' => $request->start_at,
+                'stay_time' => $request->stay_time,
+            ]);
+        } elseif (Auth::user()->administer_flag == 1) {
+            return redirect(RouteServiceProvider::ADMIN_HOME);
+        } else {
+            return redirect(RouteServiceProvider::USER_HOME);
+        }
     }
 
     /**

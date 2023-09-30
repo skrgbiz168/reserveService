@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\ReserveController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -29,19 +30,36 @@ Route::get('/dashboard', function () {
     return Inertia::render('Dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
+// 予約ページ
+Route::prefix('reserve')->name('reserve.')->group(function () {
+    Route::get('/', [ReserveController::class, 'index'])->name('index');
+    Route::post('/checkAuth', [ReserveController::class, 'checkAuth'])->name('checkAuth');
+});
+
 Route::middleware('auth')->group(function () {
     // 管理者
-    Route::middleware('adminCheck')->prefix('administer')->name('administer')->group(function () {
+    Route::middleware('adminCheck')->prefix('administer')->name('administer.')->group(function () {
         Route::get('/', function () {
             return Inertia::render('Administer/Top');
         })->name('top');
+
+        Route::prefix('reserve')->name('reserve.')->group(function () {
+            Route::get('/list', [ReserveController::class, 'adminList'])->name('list');
+        });
     });
 
     // ユーザー
-    Route::middleware('userCheck')->prefix('user')->name('user')->group(function () {
+    Route::middleware('userCheck')->prefix('user')->name('user.')->group(function () {
         Route::get('/', function () {
             return Inertia::render('User/Top');
         })->name('top');
+
+        // 予約ページ
+        Route::prefix('reserve')->name('reserve.')->group(function () {
+            Route::get('/create', [ReserveController::class, 'create'])->name('create');
+            Route::post('/store', [ReserveController::class, 'store'])->name('store');
+            Route::get('/list', [ReserveController::class, 'userList'])->name('list');
+        });
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
