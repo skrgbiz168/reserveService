@@ -89,6 +89,13 @@ class ReserveController extends Controller
         }
     }
 
+    public function adminList()
+    {
+        $reserves = Reserves::with('user')->orderBy('start_at')->get();
+        return Inertia::render('Administer/Reserve/List',[
+            'reserves' => $reserves
+        ]);
+    }
     /**
      * Display the specified resource.
      *

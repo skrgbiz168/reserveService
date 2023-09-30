@@ -42,6 +42,10 @@ Route::middleware('auth')->group(function () {
         Route::get('/', function () {
             return Inertia::render('Administer/Top');
         })->name('top');
+
+        Route::prefix('reserve')->name('reserve.')->group(function () {
+            Route::get('/list', [ReserveController::class, 'adminList'])->name('list');
+        });
     });
 
     // ユーザー
