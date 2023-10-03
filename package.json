@@ -17,6 +17,8 @@
         "vue": "^3.2.41"
     },
     "dependencies": {
-        "date-fns": "^2.30.0"
+        "@mdi/font": "^7.2.96",
+        "date-fns": "^2.30.0",
+        "vite-plugin-vuetify": "^1.0.2"
     }
 }

@@ -1,6 +1,7 @@
 <script setup>
 import UserAuthenticatedLayout from '@/Layouts/UserAuthenticatedLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { ref, onMounted, watchEffect } from 'vue';
 
 const props = defineProps({
     start_at: String,
@@ -10,13 +11,96 @@ const props = defineProps({
 const form = useForm({
     start_at: props.start_at,
     stay_time: props.stay_time,
+
+    cardNumber: '',
+    cardMonth: '',
+    cardYear: '',
+    cardCVC: '',
 });
 
 const send = () => {
     form.post(route('user.reserve.store'))
 }
-</script>
 
+    let cardNumber = null
+    let stripe, card;
+
+    var elementStyles = {
+      base: {
+        color: '#32325D',
+        fontWeight: 500,
+        fontFamily: 'Source Code Pro, Consolas, Menlo, monospace',
+        fontSize: '20px',
+        fontColor: '#000',
+        fontSmoothing: 'antialiased',
+
+        '::placeholder': {
+          color: '#CFD7DF',
+        },
+        ':-webkit-autofill': {
+          color: '#e39f48',
+        },
+      },
+      invalid: {
+        color: '#fa755a',
+        iconColor: '#fa755a',
+      },
+    };
+
+  var elementClasses = {
+    focus: 'focused',
+    empty: 'empty',
+    invalid: 'invalid',
+  };
+
+    onMounted(() => {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeStripe);
+      } else {
+        initializeStripe();
+      }
+
+    });
+
+    function initializeStripe() {
+      stripe = window.Stripe('pk_test_51HK3XmFJIagEl9ELP0KjqIrmjxxdftRe8Yjr4vYeYIF0WksDx5wmo47irJHIzxDrS9Mtdob5pZQa5RiPlrlKw76J00q6F4C3KS');
+      const elements = stripe.elements();
+
+      cardNumber = elements.create('cardNumber', {
+        style: elementStyles,
+        classes: elementClasses,
+      });
+      cardNumber.mount('#card-number')
+
+      // カードの有効期限
+      const cardExpiry = elements.create('cardExpiry', {
+        style: elementStyles,
+        classes: elementClasses,
+      });
+      cardExpiry.mount('#card-expiry');
+
+      // カードのCVC入力
+      const cardCvc = elements.create('cardCvc', {
+        style: elementStyles,
+        classes: elementClasses,
+      });
+      cardCvc.mount('#card-cvc');
+    }
+
+    const handleSubmit = async () => {
+      if (stripe && cardNumber) {
+          stripe.createToken(cardNumber).then(function(result) {
+          if (result.error) {
+            // エラーを処理
+            console.error(result.error.message);
+          } else {
+            // トークンを処理
+            console.log(result.token);
+          }
+        });
+      }
+    };
+</script>
 <template>
     <Head title="予約確認" />
 
@@ -46,12 +130,32 @@ const send = () => {
                       </tbody>
                     </table>
 
-                    <div class="flex justify-center my-4">
-                        <button class="mx-4 py-2 w-1/2 bg-red-400 rounded-lg"
-                            @click="send"    :disabled="form.processing">
-                        登録する
-                        </button>
-                    </div>
+                    <form @submit.prevent="handleSubmit">
+                      <div class="flex justify-center mt-4">
+                        <div class="w-1/2 ">
+                          <label for="card_number">カード番号</label>
+                            <div id="card-number" class="form-control p-4 border-solid border-2 rounded-lg"></div>
+                          </div>
+                        </div>
+
+                        <div class="flex justify-center mt-4">
+                          <div class="w-1/4 mx-1">
+                            <label for="card_expiry">有効期限</label>
+                            <div id="card-expiry" class="form-control p-4 border-solid border-2 rounded-lg"></div>
+                          </div>
+                          <div class="w-1/4 mx-1">
+                            <label for="card-cvc">セキュリティコード</label>
+                            <div id="card-cvc" class="form-control p-4 border-solid border-2 rounded-lg"></div>
+                          </div>
+                        </div>
+
+                        <div class="flex justify-center my-4">
+                            <button class="mx-4 py-2 w-1/2 bg-red-400 rounded-lg"
+                                type="submit"    :disabled="form.processing">
+                            支払う
+                            </button>
+                        </div>
+                    </form>
 
                 </div>
             </div>

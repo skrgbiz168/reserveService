@@ -60,7 +60,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/create', [ReserveController::class, 'create'])->name('create');
             Route::post('/store', [ReserveController::class, 'store'])->name('store');
             Route::get('/list', [ReserveController::class, 'userList'])->name('list');
-            Route::get('/payment', [ReservePaymentController::class, 'userList'])->name('list');
+            Route::get('/payment', [ReservePaymentController::class, 'payment'])->name('payment');
         });
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

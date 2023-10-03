@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 class ReservePaymentController extends Controller
 {
-    public function index(Request $request)
+    public function payment(Request $request)
     {
 
         return Inertia::render('Reserve/index', [
