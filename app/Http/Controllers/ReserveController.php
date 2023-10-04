@@ -21,7 +21,7 @@ class ReserveController extends Controller
     {
         $seach = array(
             'week' => $request->week,
-            'stayTime'  => $request->stayTime ===null ? 0 : $request->stayTime,
+            'stayTime'  => $request->stayTime ===null ? 1 : $request->stayTime,
         );
         return Inertia::render('Reserve/index', [
             'weeks' => ReserveFunctions::getWeekDates($seach['week'], $seach['stayTime']),
@@ -38,7 +38,7 @@ class ReserveController extends Controller
             'stayTime' => ['required'],
         ]);
         $start_at = ReserveFunctions::makeReserveStart($request);
-        $stay_time = $request->stayTime == null ? 0 : $request->stayTime;
+        $stay_time = $request->stayTime == null ? 1 : $request->stayTime;
 
         if (Auth::check()) {
             return redirect()->route('user.reserve.create', [
@@ -61,11 +61,15 @@ class ReserveController extends Controller
     public function create(Request $request)
     {
         $checkResult = ReserveFunctions::checkReserve($request->start_at, $request->stay_time);
+        $price = ReserveFunctions::getPrice($request->stay_time);
 
         if ($checkResult) {
             return Inertia::render('User/Reserve/Create', [
                 'start_at' => $request->start_at,
                 'stay_time' => intval($request->stay_time),
+                'price' => $price,
+
+                'stripe_public_key' => config('stripe.public_key'),
             ]);
         } else {
             return Inertia::render('User/Reserve/CheckError');

@@ -99,7 +99,6 @@ class ReserveFunctions
         $now = Carbon::now();
         $start_at = Carbon::createFromFormat('Y/n/j H:i', $start_at);
         $stay_time = intval($stay_time);
-        $stay_time += 1;
         $finish_at = $start_at->copy()->addHours($stay_time)->subMinute();
 
         if ($now > $start_at || $start_at->minute !== 0
@@ -134,7 +133,7 @@ class ReserveFunctions
         // $finishTime = $startTime->copy()->addHours(1);
         $start_at = Carbon::createFromFormat('Y/n/j H:i', $request->start_at);
         $stay_time = intval($request->stay_time);
-        $finish_at = $start_at->copy()->addHours($stay_time+1);
+        $finish_at = $start_at->copy()->addHours($stay_time);
 
         DB::beginTransaction();
 
@@ -153,5 +152,10 @@ class ReserveFunctions
             return false;
         }
         return true;
+    }
+
+    public static function getPrice($stay_time = 0)
+    {
+        return intval($stay_time) * config('price.hour');
     }
 }

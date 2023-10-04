@@ -6,6 +6,9 @@ import { ref, onMounted, watchEffect } from 'vue';
 const props = defineProps({
     start_at: String,
     stay_time: Number,
+    price: Number,
+
+    stripe_public_key: String
 });
 
 const form = useForm({
@@ -59,11 +62,10 @@ const send = () => {
       } else {
         initializeStripe();
       }
-
     });
 
     function initializeStripe() {
-      stripe = window.Stripe('pk_test_51HK3XmFJIagEl9ELP0KjqIrmjxxdftRe8Yjr4vYeYIF0WksDx5wmo47irJHIzxDrS9Mtdob5pZQa5RiPlrlKw76J00q6F4C3KS');
+      stripe = window.Stripe(props.stripe_public_key);
       const elements = stripe.elements();
 
       cardNumber = elements.create('cardNumber', {
@@ -124,7 +126,13 @@ const send = () => {
                         <tr>
                           <td class="w-1/2 text-right px-4 py-2">使用時間</td>
                           <td class="w-1/2 px-4 py-2">
-                            {{ stay_time +1 }} 時間
+                            {{ stay_time }} 時間
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="w-1/2 text-right px-4 py-2">料金</td>
+                          <td class="w-1/2 px-4 py-2">
+                            {{ price }} 円
                           </td>
                         </tr>
                       </tbody>

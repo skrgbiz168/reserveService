@@ -21,7 +21,7 @@ const seach = useForm({
 
 const stayTimeValue = Array.from({ length: 6 }, (_, i) => ({
   text: `${i + 1}時間`,
-  value: i ,
+  value: i+1 ,
 }));
 
 const hours = Array.from({ length: 24 }, (_, i) => `${i}時`);
