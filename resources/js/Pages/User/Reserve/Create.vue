@@ -31,9 +31,9 @@ const send = () => {
     var elementStyles = {
       base: {
         color: '#32325D',
-        fontWeight: 500,
+        fontWeight: 300,
         fontFamily: 'Source Code Pro, Consolas, Menlo, monospace',
-        fontSize: '20px',
+        fontSize: '18px',
         fontColor: '#000',
         fontSmoothing: 'antialiased',
 
@@ -140,29 +140,32 @@ const send = () => {
 
                     <form @submit.prevent="handleSubmit">
                       <div class="flex justify-center mt-4">
-                        <div class="w-1/2 ">
+                        <div class="w-1/2">
+                          <div class="flex justify-start w-1/4">
+                            <img src="/Stripelogo.png">
+                          </div>
                           <label for="card_number">カード番号</label>
-                            <div id="card-number" class="form-control p-4 border-solid border-2 rounded-lg"></div>
-                          </div>
+                          <div id="card-number" class="form-control p-2 border-solid border-2 rounded-lg"></div>
                         </div>
+                      </div>
 
-                        <div class="flex justify-center mt-4">
-                          <div class="w-1/4 mx-1">
-                            <label for="card_expiry">有効期限</label>
-                            <div id="card-expiry" class="form-control p-4 border-solid border-2 rounded-lg"></div>
-                          </div>
-                          <div class="w-1/4 mx-1">
-                            <label for="card-cvc">セキュリティコード</label>
-                            <div id="card-cvc" class="form-control p-4 border-solid border-2 rounded-lg"></div>
-                          </div>
+                      <div class="flex justify-center mt-4">
+                        <div class="w-1/4 mx-1">
+                          <label for="card_expiry">有効期限</label>
+                          <div id="card-expiry" class="form-control p-2 border-solid border-2 rounded-lg"></div>
                         </div>
+                        <div class="w-1/4 mx-1">
+                          <label for="card-cvc">セキュリティコード</label>
+                          <div id="card-cvc" class="form-control p-2 border-solid border-2 rounded-lg"></div>
+                        </div>
+                      </div>
 
-                        <div class="flex justify-center my-4">
-                            <button class="mx-4 py-2 w-1/2 bg-red-400 rounded-lg"
-                                type="submit"    :disabled="form.processing">
-                            支払う
-                            </button>
-                        </div>
+                      <div class="flex justify-center mt-4 mb-16">
+                          <button class="mx-4 py-2 w-1/2 bg-red-400 rounded-lg"
+                              type="submit"    :disabled="form.processing">
+                          支払う
+                          </button>
+                      </div>
                     </form>
 
                 </div>
