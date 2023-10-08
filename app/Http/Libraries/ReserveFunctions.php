@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Stripe\Stripe;
 
 class ReserveFunctions
 {
@@ -59,12 +60,13 @@ class ReserveFunctions
                 // ->subHours($time)をstart_atにつけて、2時間予約時の時間分を確保する
                 $start_at  = Carbon::createFromFormat('Y-m-j H:i:s', $reservation->start_at);
                 if ($stayTime !== null) {
-                    $start_at  =  $start_at->subHours($stayTime);
+                    $start_at  =  $start_at->subHours($stayTime)->addMinute();
                 }
                 $finish_at = Carbon::createFromFormat('Y-m-j H:i:s', $reservation->finish_at);
                 return $date->between($start_at, $finish_at->subMinute());
             })->count();
 
+            // 重複していない、かつ現在時刻より未来の場合
             if (!$existingReservation && $now < $date) {
                 $availableDates[$date->format('n/d G')] = true;
             } else {
@@ -126,7 +128,7 @@ class ReserveFunctions
     {
         $result = self::checkReserve($request->start_at, $request->stay_time);
         if ($result === false) {
-            return false;
+            return array(false, "予約時間が確保できませんでした。決済は行われていませんので、ご安心ください。");
         }
 
         // $startTime = self::makeReserveStart($request);
@@ -135,26 +137,42 @@ class ReserveFunctions
         $stay_time = intval($request->stay_time);
         $finish_at = $start_at->copy()->addHours($stay_time);
 
+        // Stripeのシークレットキーを設定
+        Stripe::setApiKey(config('stripe.secret_key'));
+
         DB::beginTransaction();
 
         try {
-            Reserves::create([
+
+            $reserve = Reserves::create([
                 'users_id' => Auth::id(),
                 'status' => 1,
                 'start_at' => $start_at,
                 'finish_at' => $finish_at,
+                'refund_id' => 'temp',
+                'amount' => $request->amount,
             ]);
+
+            $charge = \Stripe\Charge::create([
+                "amount" => $request->amount,  // 金額をセント単位で指定
+                "currency" => "jpy",
+                "source" => $request->stripeToken['id'],  // 取得したトークンをここで使用
+                "description" => "テスト決済"
+            ]);
+
+            $reserve->refund_id = $charge->id;
+
             DB::commit();
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             DB::rollBack();
-            return false;
+            return array(false, "決済でエラーが発生しました。時間を置いてから再度ご確認をお願いいたします。");
         }
-        return true;
+        return array(true, null);
     }
 
-    public static function getPrice($stay_time = 0)
+    public static function getAmount($stay_time = 0)
     {
         return intval($stay_time) * config('price.hour');
     }

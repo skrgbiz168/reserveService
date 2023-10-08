@@ -1,12 +1,12 @@
 <script setup>
 import UserAuthenticatedLayout from '@/Layouts/UserAuthenticatedLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
-import { ref, onMounted, watchEffect } from 'vue';
+import { ref, onMounted } from 'vue';
 
 const props = defineProps({
     start_at: String,
     stay_time: Number,
-    price: Number,
+    amount: Number,
 
     stripe_public_key: String
 });
@@ -14,41 +14,34 @@ const props = defineProps({
 const form = useForm({
     start_at: props.start_at,
     stay_time: props.stay_time,
+    amount: props.amount,
 
-    cardNumber: '',
-    cardMonth: '',
-    cardYear: '',
-    cardCVC: '',
+    stripeToken: '',
 });
 
-const send = () => {
-    form.post(route('user.reserve.store'))
-}
-
-    let cardNumber = null
-    let stripe, card;
-
-    var elementStyles = {
-      base: {
-        color: '#32325D',
-        fontWeight: 300,
-        fontFamily: 'Source Code Pro, Consolas, Menlo, monospace',
-        fontSize: '18px',
-        fontColor: '#000',
-        fontSmoothing: 'antialiased',
-
-        '::placeholder': {
-          color: '#CFD7DF',
-        },
-        ':-webkit-autofill': {
-          color: '#e39f48',
-        },
-      },
-      invalid: {
-        color: '#fa755a',
-        iconColor: '#fa755a',
-      },
-    };
+let error_message = ref('')
+let cardNumber = null
+let stripe, card;
+var elementStyles = {
+  base: {
+    color: '#32325D',
+    fontWeight: 300,
+    fontFamily: 'Source Code Pro, Consolas, Menlo, monospace',
+    fontSize: '18px',
+    fontColor: '#000',
+    fontSmoothing: 'antialiased',
+    '::placeholder': {
+      color: '#CFD7DF',
+    },
+    ':-webkit-autofill': {
+      color: '#e39f48',
+    },
+  },
+  invalid: {
+    color: '#fa755a',
+    iconColor: '#fa755a',
+  },
+};
 
   var elementClasses = {
     focus: 'focused',
@@ -97,7 +90,12 @@ const send = () => {
             console.error(result.error.message);
           } else {
             // トークンを処理
-            console.log(result.token);
+            form.stripeToken = result.token
+            const resultform = form.post(route('user.reserve.store'))
+
+            if (resultform.errorMessage) {
+              error_message.value = resultform.errorMessage
+            }
           }
         });
       }
@@ -132,7 +130,7 @@ const send = () => {
                         <tr>
                           <td class="w-1/2 text-right px-4 py-2">料金</td>
                           <td class="w-1/2 px-4 py-2">
-                            {{ price }} 円
+                            {{ amount }} 円
                           </td>
                         </tr>
                       </tbody>
@@ -158,6 +156,12 @@ const send = () => {
                           <label for="card-cvc">セキュリティコード</label>
                           <div id="card-cvc" class="form-control p-2 border-solid border-2 rounded-lg"></div>
                         </div>
+                      </div>
+
+                      <div v-if="error_message != ''">
+                        <p class="border-solid border-2 border-red-500">
+                          {{ error_message }}
+                        </p>
                       </div>
 
                       <div class="flex justify-center mt-4 mb-16">

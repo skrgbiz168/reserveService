@@ -13,8 +13,10 @@ class Reserves extends Model
     protected $fillable = [
         'users_id',
         'status',
+        'refund_id',
+        'amount',
         'start_at',
-        'finish_at'
+        'finish_at',
     ];
 
     public function user()

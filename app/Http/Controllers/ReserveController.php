@@ -61,18 +61,21 @@ class ReserveController extends Controller
     public function create(Request $request)
     {
         $checkResult = ReserveFunctions::checkReserve($request->start_at, $request->stay_time);
-        $price = ReserveFunctions::getPrice($request->stay_time);
+        $amount = ReserveFunctions::getAmount($request->stay_time);
 
         if ($checkResult) {
             return Inertia::render('User/Reserve/Create', [
                 'start_at' => $request->start_at,
                 'stay_time' => intval($request->stay_time),
-                'price' => $price,
+                'amount' => $amount,
 
                 'stripe_public_key' => config('stripe.public_key'),
             ]);
         } else {
-            return Inertia::render('User/Reserve/CheckError');
+            $msg = "選択いただいた時間では予約ができませんでした";
+            return Inertia::render('User/Reserve/CheckError', [
+                'message' => $msg,
+            ]);
         }
     }
 
@@ -84,12 +87,25 @@ class ReserveController extends Controller
      */
     public function store(StoreReserveRequest $request)
     {
-        $result = ReserveFunctions::createReserve($request);
+        $request->validate([
+            'start_at' => 'required|string',
+            'stay_time' => 'required|numeric',
+            'amount' => 'required|numeric',
+            // 'stripeToken' => 'required|array',
+        ]);
+
+        list($result, $msg) = ReserveFunctions::createReserve($request);
 
         if ($result) {
-            return true;
+            return to_route('user.reserve.list')
+            ->with([
+                'message' => '予約が完了しました',
+                'status' => 'success'
+            ]);
         } else {
-            return 1212;
+            return Inertia::render('User/Reserve/CheckError', [
+                'message' => $msg,
+            ]);
         }
     }
 

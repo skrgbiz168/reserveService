@@ -15,6 +15,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('users_id')->constrained()->onUpdate('cascade');
             $table->unsignedInteger('status');
+            $table->string('refund_id');
+            $table->mediumInteger('amount');
             $table->timestamp('start_at')->useCurrent();
             $table->timestamp('finish_at')->useCurrent();
             $table->timestamps();
