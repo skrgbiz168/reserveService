@@ -161,6 +161,7 @@ class ReserveFunctions
             ]);
 
             $reserve->refund_id = $charge->id;
+            $reserve->save();
 
             DB::commit();
 

@@ -6,6 +6,7 @@ use App\Models\Reserves;
 use App\Http\Requests\StoreReserveRequest;
 // use App\Http\Requests\UpdateItemRequest;
 use App\Http\Libraries\ReserveFunctions;
+use Carbon\Carbon;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -109,11 +110,22 @@ class ReserveController extends Controller
         }
     }
 
-    public function adminList()
+    public function adminList(Request $request)
     {
-        $reserves = Reserves::with('user')->orderBy('start_at')->get();
+        $seach = array(
+            'user_id' => $request->user_id,
+            'user_name' => $request->user_name,
+            'type' => $request->type == null ? 0 : $request->type,
+        );
+
+        $reserves = Reserves::with('user')
+                            ->seachAdminList($seach['user_id'], $seach['user_name'], $seach['type'])
+                            ->orderBy('start_at')
+                            ->paginate(20)->withQueryString();
+
         return Inertia::render('Administer/Reserve/List',[
-            'reserves' => $reserves
+            'reserves' => $reserves,
+            'seach' => $seach,
         ]);
     }
     /**
