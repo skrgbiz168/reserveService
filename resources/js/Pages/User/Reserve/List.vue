@@ -1,11 +1,14 @@
 <script setup>
 import UserAuthenticatedLayout from '@/Layouts/UserAuthenticatedLayout.vue';
-import { Head, Link } from '@inertiajs/vue3';
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import FlashMessage from '@/Components/FlashMessage.vue'
 import { format } from 'date-fns'
 
 defineProps({
   reserves: Object,
+});
+const cansel = useForm({
+  reserve_id: '',
 });
 
 const formatDate = value => {
@@ -16,6 +19,12 @@ const formatDate = value => {
     ? format(date, "yyyy年M月d日 H時")
     : format(date, "yyyy年M月d日 H時m分");
 }
+
+const sendCansel = id => {
+  cansel.reserve_id = id
+  cansel.post(route('user.reserve.cansel'))
+}
+
 </script>
 
 <template>
@@ -40,6 +49,8 @@ const formatDate = value => {
                         <p>{{ index + 1 }}つ目</p>
                         <p>開始時間：{{ formatDate(reserve.start_at) }}</p>
                         <p>終了時間：{{ formatDate(reserve.finish_at) }}</p>
+                        <button class="py-2 w-1/3 bg-red-600 rounded-lg"
+                          @click="sendCansel(reserve.id)">削除する</button>
                         <hr v-if="index !== reserves.length - 1" />
                       </div>
                     </div>

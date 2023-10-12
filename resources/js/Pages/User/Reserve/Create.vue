@@ -111,7 +111,7 @@ var elementStyles = {
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg whitespace-nowrap">
 
                     <table class="min-w-full p-4 mt-4">
                       <tbody>

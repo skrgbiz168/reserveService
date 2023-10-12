@@ -149,7 +149,7 @@ class ReserveFunctions
                 'status' => 1,
                 'start_at' => $start_at,
                 'finish_at' => $finish_at,
-                'refund_id' => 'temp',
+                'charge_id' => 'temp',
                 'amount' => $request->amount,
             ]);
 
@@ -160,7 +160,7 @@ class ReserveFunctions
                 "description" => "テスト決済"
             ]);
 
-            $reserve->refund_id = $charge->id;
+            $reserve->charge_id = $charge->id;
             $reserve->save();
 
             DB::commit();
@@ -171,6 +171,37 @@ class ReserveFunctions
             return array(false, "決済でエラーが発生しました。時間を置いてから再度ご確認をお願いいたします。");
         }
         return array(true, null);
+    }
+    public static function cansel($reserve_id)
+    {
+        $reserve = Reserves::find($reserve_id);
+        $now = Carbon::now();
+        if ($reserve->start_at >= $now || !is_null($reserve->deleted_at)) {
+            return false;
+        }
+        Stripe::setApiKey(config('stripe.secret_key'));
+
+        DB::beginTransaction();
+
+        try {
+            $refund = \Stripe\Refund::create([
+                'charge' => $reserve->refund_id,
+                // 'amount' => 500, Charge時の通貨単位
+            ]);
+
+            dd($refund);
+
+            $reserve->deleted_at = $now;
+            $reserve->save();
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            DB::rollBack();
+            return array(false, "決済でエラーが発生しました。時間を置いてから再度ご確認をお願いいたします。");
+        }
+
     }
 
     public static function getAmount($stay_time = 0)

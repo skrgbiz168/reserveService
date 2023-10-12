@@ -14,10 +14,18 @@ class Reserves extends Model
     protected $fillable = [
         'users_id',
         'status',
-        'refund_id',
+        'charge_id',
         'amount',
         'start_at',
         'finish_at',
+        'deleted_at',
+        'refund_id',
+    ];
+    protected $dates = [
+        'deleted_at',
+        'published_at',
+        'created_at',
+        'updated_at',
     ];
 
     public function user()

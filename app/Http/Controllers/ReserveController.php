@@ -136,7 +136,8 @@ class ReserveController extends Controller
      */
     public function userList()
     {
-        $reserves = Reserves::where('users_id', Auth::id())->orderBy('start_at')->get();
+        $reserves = Reserves::where('users_id', Auth::id())->where('deleted_at', null)
+                    ->orderBy('start_at')->get();
         return Inertia::render('User/Reserve/List',[
             'reserves' => $reserves
         ]);
@@ -194,10 +195,23 @@ class ReserveController extends Controller
         ]);
     }
 
-    public function test(Request $request)
+    public function cansel(Request $request)
     {
-        dd($request->all());
-        return to_route('items.show',['item'=>2]);
+        $request->validate([
+            'reserve_id' => 'required|numeric',
+        ]);
+        $result = ReserveFunctions::cansel($request->reserve_id);
+
+        if ($result) {
+            return to_route('user.reserve.list')->with([
+                'message' => '削除しました',
+                'status' => 'success'
+            ]);
+        }
+        return to_route('user.reserve.list')->with([
+            'message' => '削除に失敗しました',
+            'status' => 'danger'
+        ]);
     }
 
 }
