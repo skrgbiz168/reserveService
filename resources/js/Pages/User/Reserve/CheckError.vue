@@ -2,6 +2,9 @@
 import UserAuthenticatedLayout from '@/Layouts/UserAuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
 
+defineProps({
+    message: String,
+});
 </script>
 
 <template>
@@ -16,7 +19,7 @@ import { Head, Link } from '@inertiajs/vue3';
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                   <div class="mt-4 flex justify-center">
-                    <p class="w-full text-center">選択いただいた時間では予約ができませんでした</p>
+                    <p class="w-full text-center"> {{ message }}</p>
                   </div>
                   <div class="my-4 flex justify-center">
                     <Link as="button" :href="route('reserve.index')"

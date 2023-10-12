@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReserveController;
+use App\Http\Controllers\ReservePaymentController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -59,6 +60,8 @@ Route::middleware('auth')->group(function () {
             Route::get('/create', [ReserveController::class, 'create'])->name('create');
             Route::post('/store', [ReserveController::class, 'store'])->name('store');
             Route::get('/list', [ReserveController::class, 'userList'])->name('list');
+            Route::get('/payment', [ReservePaymentController::class, 'payment'])->name('payment');
+            Route::post('/cansel', [ReserveController::class, 'cansel'])->name('cansel');
         });
     });
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

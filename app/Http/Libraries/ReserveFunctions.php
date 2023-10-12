@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Stripe\Stripe;
 
 class ReserveFunctions
 {
@@ -59,12 +60,13 @@ class ReserveFunctions
                 // ->subHours($time)をstart_atにつけて、2時間予約時の時間分を確保する
                 $start_at  = Carbon::createFromFormat('Y-m-j H:i:s', $reservation->start_at);
                 if ($stayTime !== null) {
-                    $start_at  =  $start_at->subHours($stayTime);
+                    $start_at  =  $start_at->subHours($stayTime)->addMinute();
                 }
                 $finish_at = Carbon::createFromFormat('Y-m-j H:i:s', $reservation->finish_at);
                 return $date->between($start_at, $finish_at->subMinute());
             })->count();
 
+            // 重複していない、かつ現在時刻より未来の場合
             if (!$existingReservation && $now < $date) {
                 $availableDates[$date->format('n/d G')] = true;
             } else {
@@ -99,7 +101,6 @@ class ReserveFunctions
         $now = Carbon::now();
         $start_at = Carbon::createFromFormat('Y/n/j H:i', $start_at);
         $stay_time = intval($stay_time);
-        $stay_time += 1;
         $finish_at = $start_at->copy()->addHours($stay_time)->subMinute();
 
         if ($now > $start_at || $start_at->minute !== 0
@@ -127,31 +128,84 @@ class ReserveFunctions
     {
         $result = self::checkReserve($request->start_at, $request->stay_time);
         if ($result === false) {
-            return false;
+            return array(false, "予約時間が確保できませんでした。決済は行われていませんので、ご安心ください。");
         }
 
         // $startTime = self::makeReserveStart($request);
         // $finishTime = $startTime->copy()->addHours(1);
         $start_at = Carbon::createFromFormat('Y/n/j H:i', $request->start_at);
         $stay_time = intval($request->stay_time);
-        $finish_at = $start_at->copy()->addHours($stay_time+1);
+        $finish_at = $start_at->copy()->addHours($stay_time);
+
+        // Stripeのシークレットキーを設定
+        Stripe::setApiKey(config('stripe.secret_key'));
 
         DB::beginTransaction();
 
         try {
-            Reserves::create([
+
+            $reserve = Reserves::create([
                 'users_id' => Auth::id(),
                 'status' => 1,
                 'start_at' => $start_at,
                 'finish_at' => $finish_at,
+                'charge_id' => 'temp',
+                'amount' => $request->amount,
             ]);
+
+            $charge = \Stripe\Charge::create([
+                "amount" => $request->amount,  // 金額をセント単位で指定
+                "currency" => "jpy",
+                "source" => $request->stripeToken['id'],  // 取得したトークンをここで使用
+                "description" => "テスト決済"
+            ]);
+
+            $reserve->charge_id = $charge->id;
+            $reserve->save();
+
             DB::commit();
 
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             DB::rollBack();
+            return array(false, "決済でエラーが発生しました。時間を置いてから再度ご確認をお願いいたします。");
+        }
+        return array(true, null);
+    }
+    public static function cansel($reserve_id)
+    {
+        $reserve = Reserves::find($reserve_id);
+        $now = Carbon::now();
+        if ($reserve->start_at >= $now || !is_null($reserve->deleted_at)) {
             return false;
         }
-        return true;
+        Stripe::setApiKey(config('stripe.secret_key'));
+
+        DB::beginTransaction();
+
+        try {
+            $refund = \Stripe\Refund::create([
+                'charge' => $reserve->refund_id,
+                // 'amount' => 500, Charge時の通貨単位
+            ]);
+
+            dd($refund);
+
+            $reserve->deleted_at = $now;
+            $reserve->save();
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            Log::error($e->getMessage());
+            DB::rollBack();
+            return array(false, "決済でエラーが発生しました。時間を置いてから再度ご確認をお願いいたします。");
+        }
+
+    }
+
+    public static function getAmount($stay_time = 0)
+    {
+        return intval($stay_time) * config('price.hour');
     }
 }

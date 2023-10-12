@@ -21,7 +21,7 @@ const seach = useForm({
 
 const stayTimeValue = Array.from({ length: 6 }, (_, i) => ({
   text: `${i + 1}時間`,
-  value: i ,
+  value: i+1 ,
 }));
 
 const hours = Array.from({ length: 24 }, (_, i) => `${i}時`);
@@ -59,16 +59,25 @@ const sendAddWeek = () => {
         <div
             class="relative mt-16 w-full md:w-3/4 md:mx-auto px-4 min-h-screen "
         >
-        <div class="w-full mt-4 flex justify-center">
-          <div class="w-1/2">
-            <label for="stayTime" class="w-full">使用時間</label>
-            <select id="stayTime" class="w-full rounded-lg"
-                v-model="seach.stayTime" @change="sendStayTime">
-              <option v-for="hour in stayTimeValue" :key="hour.value" :value="hour.value">
-                {{ hour.text }}
-              </option>
-            </select>
-          </div>
+
+        <div class="mt-4 flex justify-center">
+            <table class="min-w-full">
+              <tbody>
+                <tr>
+                  <td class="w-1/2 text-right px-4 py-2">
+                    <label for="stayTime">使用時間</label>
+                  </td>
+                  <td class="w-1/2 px-4 py-2">
+                    <select id="stayTime" class="w-3/4 rounded-lg border"
+                        v-model="seach.stayTime" @change="sendStayTime">
+                      <option v-for="hour in stayTimeValue" :key="hour.value" :value="hour.value">
+                        {{ hour.text }}
+                      </option>
+                    </select>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
         </div>
 
         <div class="w-full mt-4 flex justify-center">

@@ -6,6 +6,7 @@ use App\Models\Reserves;
 use App\Http\Requests\StoreReserveRequest;
 // use App\Http\Requests\UpdateItemRequest;
 use App\Http\Libraries\ReserveFunctions;
+use Carbon\Carbon;
 use Inertia\Inertia;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,7 +22,7 @@ class ReserveController extends Controller
     {
         $seach = array(
             'week' => $request->week,
-            'stayTime'  => $request->stayTime ===null ? 0 : $request->stayTime,
+            'stayTime'  => $request->stayTime ===null ? 1 : $request->stayTime,
         );
         return Inertia::render('Reserve/index', [
             'weeks' => ReserveFunctions::getWeekDates($seach['week'], $seach['stayTime']),
@@ -38,7 +39,7 @@ class ReserveController extends Controller
             'stayTime' => ['required'],
         ]);
         $start_at = ReserveFunctions::makeReserveStart($request);
-        $stay_time = $request->stayTime == null ? 0 : $request->stayTime;
+        $stay_time = $request->stayTime == null ? 1 : $request->stayTime;
 
         if (Auth::check()) {
             return redirect()->route('user.reserve.create', [
@@ -61,14 +62,21 @@ class ReserveController extends Controller
     public function create(Request $request)
     {
         $checkResult = ReserveFunctions::checkReserve($request->start_at, $request->stay_time);
+        $amount = ReserveFunctions::getAmount($request->stay_time);
 
         if ($checkResult) {
             return Inertia::render('User/Reserve/Create', [
                 'start_at' => $request->start_at,
                 'stay_time' => intval($request->stay_time),
+                'amount' => $amount,
+
+                'stripe_public_key' => config('stripe.public_key'),
             ]);
         } else {
-            return Inertia::render('User/Reserve/CheckError');
+            $msg = "選択いただいた時間では予約ができませんでした";
+            return Inertia::render('User/Reserve/CheckError', [
+                'message' => $msg,
+            ]);
         }
     }
 
@@ -80,20 +88,44 @@ class ReserveController extends Controller
      */
     public function store(StoreReserveRequest $request)
     {
-        $result = ReserveFunctions::createReserve($request);
+        $request->validate([
+            'start_at' => 'required|string',
+            'stay_time' => 'required|numeric',
+            'amount' => 'required|numeric',
+            // 'stripeToken' => 'required|array',
+        ]);
+
+        list($result, $msg) = ReserveFunctions::createReserve($request);
 
         if ($result) {
-            return true;
+            return to_route('user.reserve.list')
+            ->with([
+                'message' => '予約が完了しました',
+                'status' => 'success'
+            ]);
         } else {
-            return 1212;
+            return Inertia::render('User/Reserve/CheckError', [
+                'message' => $msg,
+            ]);
         }
     }
 
-    public function adminList()
+    public function adminList(Request $request)
     {
-        $reserves = Reserves::with('user')->orderBy('start_at')->get();
+        $seach = array(
+            'user_id' => $request->user_id,
+            'user_name' => $request->user_name,
+            'type' => $request->type == null ? 0 : $request->type,
+        );
+
+        $reserves = Reserves::with('user')
+                            ->seachAdminList($seach['user_id'], $seach['user_name'], $seach['type'])
+                            ->orderBy('start_at')
+                            ->paginate(20)->withQueryString();
+
         return Inertia::render('Administer/Reserve/List',[
-            'reserves' => $reserves
+            'reserves' => $reserves,
+            'seach' => $seach,
         ]);
     }
     /**
@@ -104,7 +136,8 @@ class ReserveController extends Controller
      */
     public function userList()
     {
-        $reserves = Reserves::where('users_id', Auth::id())->orderBy('start_at')->get();
+        $reserves = Reserves::where('users_id', Auth::id())->where('deleted_at', null)
+                    ->orderBy('start_at')->get();
         return Inertia::render('User/Reserve/List',[
             'reserves' => $reserves
         ]);
@@ -162,10 +195,23 @@ class ReserveController extends Controller
         ]);
     }
 
-    public function test(Request $request)
+    public function cansel(Request $request)
     {
-        dd($request->all());
-        return to_route('items.show',['item'=>2]);
+        $request->validate([
+            'reserve_id' => 'required|numeric',
+        ]);
+        $result = ReserveFunctions::cansel($request->reserve_id);
+
+        if ($result) {
+            return to_route('user.reserve.list')->with([
+                'message' => '削除しました',
+                'status' => 'success'
+            ]);
+        }
+        return to_route('user.reserve.list')->with([
+            'message' => '削除に失敗しました',
+            'status' => 'danger'
+        ]);
     }
 
 }
