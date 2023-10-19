@@ -7,11 +7,18 @@ use App\Http\Controllers\Auth\EmailVerificationPromptController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\ProviderLoginController;
 use App\Http\Controllers\Auth\RegisteredUserController;
 use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
+    // プロバイダーへのリダイレクト処理のルート
+    Route::get('/login/{provider}', [ProviderLoginController::class, 'redirectToProvider'])
+                    ->name('loginProvider');
+    // プロバイダーからのコールバック時のルート
+    Route::get('/login/{provider}/callback', [ProviderLoginController::class, 'handleProviderCallback']);
+
     Route::get('register', [RegisteredUserController::class, 'create'])
                 ->name('register');
 

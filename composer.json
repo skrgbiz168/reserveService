@@ -12,8 +12,10 @@
         "laravel/cashier": "^14.12",
         "laravel/framework": "^10.0",
         "laravel/sanctum": "^3.2",
+        "laravel/socialite": "^5.9",
         "laravel/tinker": "^2.8",
         "nesbot/carbon": "^2.70",
+        "socialiteproviders/line": "^4.1",
         "tightenco/ziggy": "^1.0"
     },
     "require-dev": {
