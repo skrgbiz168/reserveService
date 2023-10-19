@@ -23,6 +23,8 @@ class User extends Authenticatable
         'administer_flag',
         'email',
         'password',
+        'provider',
+        'provided_user_id',
     ];
 
     /**

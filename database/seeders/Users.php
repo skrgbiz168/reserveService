@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Hash;
 
 class Users extends Seeder
@@ -18,21 +19,25 @@ class Users extends Seeder
             'administer_flag' => 1,
             'email' => 'administer@example.com',
             'password' => Hash::make('pass'),
+            'provided_user_id' => 'mail_' . Str::random(8),
         ] , [
             'name' => '利用者1',
             'administer_flag' => 0,
             'email' => 'user1@example.com',
             'password' => Hash::make('pass'),
+            'provided_user_id' => 'mail_' . Str::random(8),
         ] , [
             'name' => '利用者2',
             'administer_flag' => 0,
             'email' => 'user2@example.com',
             'password' => Hash::make('pass'),
+            'provided_user_id' => 'mail_' . Str::random(8),
         ] , [
             'name' => '利用者3',
             'administer_flag' => 0,
             'email' => 'user3@example.com',
             'password' => Hash::make('pass'),
+            'provided_user_id' => 'mail_' . Str::random(8),
         ]));
     }
 }

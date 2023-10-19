@@ -105,5 +105,13 @@ const submit = () => {
                 </Link>
             </div>
         </form>
+
+        <div class="flex items-center justify-center mt-4 p-4">
+            <a :href="route('loginProvider', {'provider': 'line'})" class="flex justify-start border-2 border-gray-400 rounded-lg">
+                <img src="/LineLogin.png" class="w-1/4 p-2">
+                <p class="w-3/4 ml-1 flex items-center">Lineでログインする</p>
+            </a>
+        </div>
+
     </GuestLayout>
 </template>

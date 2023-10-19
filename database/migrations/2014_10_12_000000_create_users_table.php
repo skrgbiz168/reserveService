@@ -18,6 +18,8 @@ return new class extends Migration
             $table->string('email')->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable();
+            $table->enum('provider', ['line','任意で追加 twitter等']);
+            $table->string('provided_user_id');
             $table->rememberToken();
             $table->timestamps();
         });
