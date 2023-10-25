@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReserveController;
 use App\Http\Controllers\ReservePaymentController;
+use App\Http\Controllers\Admin\CourseController as AdminCourseController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -47,6 +48,8 @@ Route::middleware('auth')->group(function () {
         Route::prefix('reserve')->name('reserve.')->group(function () {
             Route::get('/list', [ReserveController::class, 'adminList'])->name('list');
         });
+
+        Route::resource('/courses', AdminCourseController::class);
     });
 
     // ユーザー
